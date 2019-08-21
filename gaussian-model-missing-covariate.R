@@ -5,17 +5,22 @@ library(tidybayes)
 
 options(mc.cores = parallel::detectCores())
 
-N_obs = 100
+N = 100
 x = rnorm(100, mean = 0, sd = 1)
-y_obs = rnorm(100, mean = 5 + 3 * x, sd = 1)
+y = rnorm(100, mean = 5 + 3 * x, sd = 1)
 x[c(3,8, 39, 50, 38, 45, 99)] = NA
 x_obs <- x[which(is.na(x) == FALSE)]
 x_mis <- x[which(is.na(x) == TRUE)]
 
-d = list(N_obs, x, y_obs, x_obs, ii_x_mis = which(is.na(x)),
-                                                  ii_x_obs = which(is.na(x) == FALSE),
-N_mis = length(x_mis),
-N_x_obs = length(x_obs)
+d <- list(
+  N = N,
+  y = y,
+  x_obs = x_obs,
+  x_mis = x_mis,
+  i_obs = which(is.na(x) == FALSE),
+  i_mis = which(is.na(x) == TRUE),
+  N_obs = length(x_obs),
+  N_mis = length(x_mis)
 )
 
 fit <- stan(file = "gaussian-model-missing-covariate.stan",

@@ -11,14 +11,13 @@
 
 // The input data is a vector 'y' of length 'N'.
 data {
-  int<lower=0> N_obs;
-  vector[N_obs] y_obs;
-  int<lower=0> N_x_obs;
-  vector[N_x_obs] x_obs;
-  int<lower=0> N_mis;
-  int<lower=1>  ii_x_obs[N_x_obs];
-  int<lower=1>  ii_x_mis[N_mis];
-  
+  int<lower=0> N;
+  vector[N] y;
+  int<lower=0, upper=N> N_obs;
+  int<lower=0, upper=N> N_mis;
+  vector[N_obs] x_obs;
+  int<lower=1, upper = N>  i_obs[N_obs];
+  int<lower=1, upper = N>  i_mis[N_mis];
 }
 
 // The parameters accepted by the model. Our model
@@ -32,20 +31,23 @@ parameters {
   real<lower=0> sigma_x;
 }
 
+transformed parameters {
+  vector[N] x;
+  x[i_obs] = x_obs;
+  x[i_mis] = x_imp;
+}
+
 // The model to be estimated. We model the output
 // 'y' to be normally distributed with mean 'mu'
 // and standard deviation 'sigma'.
 model {
   x_obs ~ normal(mu_x, sigma_x);
   x_imp ~ normal(mu_x, sigma_x);
-  for (n in ii_x_obs) 
-    y_obs[n] ~ normal(b_0 + b_1 * x_obs, sigma);
-  for (n in ii_x_mis)
-  y_obs[ii_x_mis] ~ normal(b_0 + b_1 * x_imp, sigma);
+  y ~ normal(b_0 + b_1 * x, sigma);
   
   // priors
-  b_0 ~ normal(0, 5);
-  b_1 ~ normal(0, 5);
-  mu_x ~ normal(0, 5);
-  sigma_x ~ cauchy(0, 1);
+  b_0 ~ normal(0, 10);
+  b_1 ~ normal(0, 10);
+  mu_x ~ normal(0, 10);
+  sigma_x ~ cauchy(0, 5);
 }
