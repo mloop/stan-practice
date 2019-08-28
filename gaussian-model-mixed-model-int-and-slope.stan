@@ -25,22 +25,28 @@ parameters {
   real b_1;
   real<lower=0> sigma;
   matrix[n_groups, 2] u;
-  real<lower=0> groups_int;
-  real<lower=0> groups_slope;
-  matrix[2, 2] Sigma_r;
+  corr_matrix[n_groups] omega;
+  vector<lower=0>[n_groups] sigma_group;
+  vector[n_groups] mu_u;
+}
+
+transformed parameters{
+  matrix[n_groups, n_groups] Sigma;
+  Sigma = quad_form_diag(omega, sigma_group);  // Creates the diag(variance) * corr_matrix * diag(variance) decomposition of covariance matrix
 }
 
 // The model to be estimated. We model the output
 // 'y' to be normally distributed with mean 'mu'
 // and standard deviation 'sigma'.
 model {
+  u ~ multi_normal(mu_u, quad_form_diag(omega, sigma_group));  
   y ~ normal(b_0 + x_group * u[, 1] + b_1 * height + height * (x_group * u[, 2]), sigma);
-  u ~ multi_normal(0, Sigma_r);
   
   // priors
   b_0 ~ normal(0, 10);
   b_0 ~ normal(0, 5);
   sigma ~ cauchy(0, 1);
-  Sigma_r ~ cauchy(0, 1);
+  sigma_groups ~ cauchy(0, 1);
+  omega ~ lkj_corr(2);
 }
 
