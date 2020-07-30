@@ -12,14 +12,16 @@
 // The input data is a vector 'y' of length 'N'.
 data {
   int<lower=0> N_obs;
-  vector[N_obs] y_obs;
+  matrix[N_obs_both] y_obs_both;
+  vector[N_obs_y1] y1;
+  vector[N_obs_y2] y2;
   int<lower=0> N_mis;
 }
 
 // The parameters accepted by the model. Our model
 // accepts two parameters 'mu' and 'sigma'.
 parameters {
-  real mu;
+  vector[2] mu;
   real<lower=0> sigma;
   vector[N_mis] y_mis;
 }
